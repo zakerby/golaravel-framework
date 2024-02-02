@@ -42,10 +42,10 @@ func TestMake(t *testing.T) {
 			expectData:      Data{A: "b"},
 		},
 		{
-			description: "error when data isn't map[string]any or struct",
+			description: "error when data isn't map[string]any or map[string][]string or struct",
 			data:        "1",
 			rules:       map[string]string{"a": "required"},
-			expectErr:   errors.New("data must be map[string]any or struct"),
+			expectErr:   errors.New("data must be map[string]any or map[string][]string or struct"),
 		},
 		{
 			description: "error when data is empty map",
@@ -106,7 +106,7 @@ func TestMake(t *testing.T) {
 				}),
 			},
 			expectValidator:    true,
-			expectData:         Data{A: "c"},
+			expectData:         Data{A: ""},
 			expectErrors:       true,
 			expectErrorMessage: "B can't be empty",
 		},
@@ -146,7 +146,7 @@ func TestMake(t *testing.T) {
 				}),
 			},
 			expectValidator:    true,
-			expectData:         Data{A: "c"},
+			expectData:         Data{A: ""},
 			expectErrors:       true,
 			expectErrorMessage: "b can't be empty",
 		},
@@ -311,7 +311,7 @@ func TestRule_RequiredIf(t *testing.T) {
 				assert.Nil(t, err, c.description)
 				assert.NotNil(t, validator, c.description)
 				assert.Equal(t, map[string]string{
-					"required_if": "name1 is required when name is [goravel,goravel1]",
+					"required_if": "name1 is required when name is in [goravel,goravel1]",
 				}, validator.Errors().Get("name1"))
 			},
 		},
@@ -327,7 +327,7 @@ func TestRule_RequiredIf(t *testing.T) {
 				assert.Nil(t, err, c.description)
 				assert.NotNil(t, validator, c.description)
 				assert.Equal(t, map[string]string{
-					"required_if": "name1 is required when name is [goravel,goravel1]",
+					"required_if": "name1 is required when name is in [goravel,goravel1]",
 				}, validator.Errors().Get("name1"))
 			},
 		},
@@ -888,7 +888,7 @@ func TestRule_Bool(t *testing.T) {
 				assert.Nil(t, err, c.description)
 				assert.NotNil(t, validator, c.description)
 				assert.Equal(t, map[string]string{"bool": "name1 value must be a bool"}, validator.Errors().Get("name1"))
-				assert.Equal(t, map[string]string{"bool": "name2 value must be a bool"}, validator.Errors().Get("name2"))
+				assert.Nil(t, validator.Errors().Get("name2"))
 				assert.Equal(t, map[string]string{"bool": "name3 value must be a bool"}, validator.Errors().Get("name3"))
 			},
 		},
@@ -2064,9 +2064,12 @@ func TestRule_Date(t *testing.T) {
 				validator, err := validation.Make(map[string]any{
 					"name":  "2022-12-25",
 					"name1": "2022/12/25",
+					"name2": "",
 				}, map[string]string{
 					"name":  "required|date",
 					"name1": "required|date",
+					"name2": "date",
+					"name3": "date",
 				})
 				assert.Nil(t, err, c.description)
 				assert.NotNil(t, validator, c.description)
@@ -2673,19 +2676,19 @@ func TestCustomRule(t *testing.T) {
 type Uppercase struct {
 }
 
-//Signature The name of the rule.
+// Signature The name of the rule.
 func (receiver *Uppercase) Signature() string {
 	return "uppercase"
 }
 
-//Passes Determine if the validation rule passes.
+// Passes Determine if the validation rule passes.
 func (receiver *Uppercase) Passes(data httpvalidate.Data, val any, options ...any) bool {
 	name, exist := data.Get("name")
 
 	return strings.ToUpper(val.(string)) == val.(string) && len(val.(string)) == cast.ToInt(options[0]) && name == val && exist
 }
 
-//Message Get the validation error message.
+// Message Get the validation error message.
 func (receiver *Uppercase) Message() string {
 	return ":attribute must be upper"
 }
@@ -2693,19 +2696,19 @@ func (receiver *Uppercase) Message() string {
 type Lowercase struct {
 }
 
-//Signature The name of the rule.
+// Signature The name of the rule.
 func (receiver *Lowercase) Signature() string {
 	return "lowercase"
 }
 
-//Passes Determine if the validation rule passes.
+// Passes Determine if the validation rule passes.
 func (receiver *Lowercase) Passes(data httpvalidate.Data, val any, options ...any) bool {
 	address, exist := data.Get("address")
 
 	return strings.ToLower(val.(string)) == val.(string) && len(val.(string)) == cast.ToInt(options[0]) && address == val && exist
 }
 
-//Message Get the validation error message.
+// Message Get the validation error message.
 func (receiver *Lowercase) Message() string {
 	return ":attribute must be lower"
 }
@@ -2713,17 +2716,17 @@ func (receiver *Lowercase) Message() string {
 type Duplicate struct {
 }
 
-//Signature The name of the rule.
+// Signature The name of the rule.
 func (receiver *Duplicate) Signature() string {
 	return "required"
 }
 
-//Passes Determine if the validation rule passes.
+// Passes Determine if the validation rule passes.
 func (receiver *Duplicate) Passes(data httpvalidate.Data, val any, options ...any) bool {
 	return true
 }
 
-//Message Get the validation error message.
+// Message Get the validation error message.
 func (receiver *Duplicate) Message() string {
 	return ""
 }

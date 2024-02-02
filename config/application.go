@@ -7,46 +7,44 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 
+	"github.com/goravel/framework/contracts/config"
 	"github.com/goravel/framework/support"
 	"github.com/goravel/framework/support/file"
 )
+
+var _ config.Config = &Application{}
 
 type Application struct {
 	vip *viper.Viper
 }
 
 func NewApplication(envPath string) *Application {
-	if !file.Exists(envPath) {
-		color.Redln("Please create .env and initialize it first.")
-		color.Warnln("Run command: \ncp .env.example .env && go run . artisan key:generate")
-		os.Exit(0)
-	}
-
 	app := &Application{}
 	app.vip = viper.New()
-	app.vip.SetConfigName(envPath)
-	app.vip.SetConfigType("env")
-	app.vip.AddConfigPath(".")
-
-	if err := app.vip.ReadInConfig(); err != nil {
-		color.Redln("Invalid Config error: " + err.Error())
-		os.Exit(0)
-	}
-
-	app.vip.SetEnvPrefix("goravel")
 	app.vip.AutomaticEnv()
 
+	if file.Exists(envPath) {
+		app.vip.SetConfigType("env")
+		app.vip.SetConfigFile(envPath)
+
+		if err := app.vip.ReadInConfig(); err != nil {
+			color.Redln("Invalid Config error: " + err.Error())
+			os.Exit(0)
+		}
+	}
+
 	appKey := app.Env("APP_KEY")
-	if support.Env != support.EnvArtisan {
+	if !support.IsKeyGenerateCommand {
 		if appKey == nil {
 			color.Redln("Please initialize APP_KEY first.")
-			color.Warnln("Run command: \ngo run . artisan key:generate")
+			color.Println("Create a .env file and run command: go run . artisan key:generate")
+			color.Println("Or set a system variable: APP_KEY={32-bit number} go run .")
 			os.Exit(0)
 		}
 
 		if len(appKey.(string)) != 32 {
-			color.Redln("Invalid APP_KEY, please reset it.")
-			color.Warnln("Run command: \ngo run . artisan key:generate")
+			color.Redln("Invalid APP_KEY, the length must be 32, please reset it.")
+			color.Warnln("Example command: \ngo run . artisan key:generate")
 			os.Exit(0)
 		}
 	}
@@ -54,7 +52,7 @@ func NewApplication(envPath string) *Application {
 	return app
 }
 
-//Env Get config from env.
+// Env Get config from env.
 func (app *Application) Env(envName string, defaultValue ...any) any {
 	value := app.Get(envName, defaultValue...)
 	if cast.ToString(value) == "" {
@@ -68,12 +66,12 @@ func (app *Application) Env(envName string, defaultValue ...any) any {
 	return value
 }
 
-//Add config to application.
-func (app *Application) Add(name string, configuration map[string]any) {
+// Add config to application.
+func (app *Application) Add(name string, configuration any) {
 	app.vip.Set(name, configuration)
 }
 
-//Get config from application.
+// Get config from application.
 func (app *Application) Get(path string, defaultValue ...any) any {
 	if !app.vip.IsSet(path) {
 		if len(defaultValue) > 0 {
@@ -85,7 +83,7 @@ func (app *Application) Get(path string, defaultValue ...any) any {
 	return app.vip.Get(path)
 }
 
-//GetString Get string type config from application.
+// GetString Get string type config from application.
 func (app *Application) GetString(path string, defaultValue ...any) string {
 	value := cast.ToString(app.Get(path, defaultValue...))
 	if value == "" {
@@ -99,7 +97,7 @@ func (app *Application) GetString(path string, defaultValue ...any) string {
 	return value
 }
 
-//GetInt Get int type config from application.
+// GetInt Get int type config from application.
 func (app *Application) GetInt(path string, defaultValue ...any) int {
 	value := app.Get(path, defaultValue...)
 	if cast.ToString(value) == "" {
@@ -113,7 +111,7 @@ func (app *Application) GetInt(path string, defaultValue ...any) int {
 	return cast.ToInt(value)
 }
 
-//GetBool Get bool type config from application.
+// GetBool Get bool type config from application.
 func (app *Application) GetBool(path string, defaultValue ...any) bool {
 	value := app.Get(path, defaultValue...)
 	if cast.ToString(value) == "" {

@@ -1,67 +1,25 @@
 package docker
 
 import (
-	"context"
-
-	"github.com/go-redis/redis/v8"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
-	"github.com/pkg/errors"
+	"github.com/goravel/framework/contracts/foundation"
+	"github.com/goravel/framework/contracts/testing"
+	"github.com/goravel/framework/database"
 )
 
-func Pool() (*dockertest.Pool, error) {
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		return nil, errors.WithMessage(err, "Could not construct pool")
-	}
-
-	if err := pool.Client.Ping(); err != nil {
-		return nil, errors.WithMessage(err, "Could not connect to Docker")
-	}
-
-	return pool, nil
+type Docker struct {
+	app foundation.Application
 }
 
-func Resource(pool *dockertest.Pool, opts *dockertest.RunOptions) (*dockertest.Resource, error) {
-	return pool.RunWithOptions(opts, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{
-			Name: "no",
-		}
-	})
+func NewDocker(app foundation.Application) *Docker {
+	return &Docker{
+		app: app,
+	}
 }
 
-func Redis() (*dockertest.Pool, *dockertest.Resource, error) {
-	pool, err := Pool()
-	if err != nil {
-		return nil, nil, err
+func (receiver *Docker) Database(connection ...string) (testing.Database, error) {
+	if len(connection) == 0 {
+		return NewDatabase(receiver.app, "", database.NewInitializeImpl())
+	} else {
+		return NewDatabase(receiver.app, connection[0], database.NewInitializeImpl())
 	}
-	resource, err := Resource(pool, &dockertest.RunOptions{
-		Repository: "redis",
-		Tag:        "latest",
-		Env:        []string{},
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-	_ = resource.Expire(600)
-
-	if err := pool.Retry(func() error {
-		client := redis.NewClient(&redis.Options{
-			Addr:     "localhost:" + resource.GetPort("6379/tcp"),
-			Password: "",
-			DB:       0,
-		})
-
-		if _, err := client.Ping(context.Background()).Result(); err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return nil, nil, err
-	}
-
-	return pool, resource, nil
 }

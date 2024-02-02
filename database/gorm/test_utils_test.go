@@ -5,43 +5,67 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/goravel/framework/support/env"
 	"github.com/goravel/framework/support/file"
 )
 
 func TestMysqlDocker(t *testing.T) {
-	pool, resource, db, err := MysqlDocker()
+	if env.IsWindows() {
+		t.Skip("Skipping tests of using docker")
+	}
 
-	assert.NotNil(t, pool)
-	assert.NotNil(t, resource)
-	assert.NotNil(t, db)
+	if err := testDatabaseDocker.Fresh(); err != nil {
+		t.Fatal(err)
+	}
+
+	docker := NewMysqlDocker(testDatabaseDocker)
+	query, err := docker.New()
+
+	assert.NotNil(t, query)
 	assert.Nil(t, err)
 }
 
 func TestPostgresqlDocker(t *testing.T) {
-	pool, resource, db, err := PostgresqlDocker()
+	if env.IsWindows() {
+		t.Skip("Skipping tests of using docker")
+	}
 
-	assert.NotNil(t, pool)
-	assert.NotNil(t, resource)
-	assert.NotNil(t, db)
+	if err := testDatabaseDocker.Fresh(); err != nil {
+		t.Fatal(err)
+	}
+
+	docker := NewPostgresqlDocker(testDatabaseDocker)
+	query, err := docker.New()
+
+	assert.NotNil(t, query)
 	assert.Nil(t, err)
 }
 
 func TestSqliteDocker(t *testing.T) {
-	pool, resource, db, err := SqliteDocker(dbDatabase)
+	if env.IsWindows() {
+		t.Skip("Skipping tests of using docker")
+	}
 
-	assert.NotNil(t, pool)
-	assert.NotNil(t, resource)
+	docker := NewSqliteDocker(dbDatabase)
+	db, err := docker.New()
+
 	assert.NotNil(t, db)
 	assert.Nil(t, err)
-
-	file.Remove("goravel")
+	assert.Nil(t, file.Remove("goravel"))
 }
 
 func TestSqlserverDocker(t *testing.T) {
-	pool, resource, db, err := SqlserverDocker()
+	if env.IsWindows() {
+		t.Skip("Skipping tests of using docker")
+	}
 
-	assert.NotNil(t, pool)
-	assert.NotNil(t, resource)
+	if err := testDatabaseDocker.Fresh(); err != nil {
+		t.Fatal(err)
+	}
+
+	docker := NewSqlserverDocker(testDatabaseDocker)
+	db, err := docker.New()
+
 	assert.NotNil(t, db)
 	assert.Nil(t, err)
 }

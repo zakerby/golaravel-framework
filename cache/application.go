@@ -1,32 +1,35 @@
 package cache
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/gookit/color"
-
 	"github.com/goravel/framework/contracts/cache"
-	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/contracts/config"
+	"github.com/goravel/framework/contracts/log"
 )
 
 type Application struct {
 	cache.Driver
+	config config.Config
+	driver Driver
+	log    log.Log
 	stores map[string]cache.Driver
 }
 
-func NewApplication(store string) *Application {
-	driver := driver(store)
-	if driver == nil {
-		return nil
+func NewApplication(config config.Config, log log.Log, store string) (*Application, error) {
+	driver := NewDriverImpl(config)
+	instance, err := driver.New(store)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Application{
-		Driver: driver,
+		Driver: instance,
+		config: config,
+		driver: driver,
+		log:    log,
 		stores: map[string]cache.Driver{
-			store: driver,
+			store: instance,
 		},
-	}
+	}, nil
 }
 
 func (app *Application) Store(name string) cache.Driver {
@@ -34,52 +37,14 @@ func (app *Application) Store(name string) cache.Driver {
 		return driver
 	}
 
-	return driver(name)
-}
-
-func driver(store string) cache.Driver {
-	driver := facades.Config.GetString(fmt.Sprintf("cache.stores.%s.driver", store))
-	switch driver {
-	case "redis":
-		return initRedis(store)
-	case "memory":
-		return initMemory()
-	case "custom":
-		return initCustom(store)
-	default:
-		color.Redf("[Cache] Not supported cache store: %s\n", store)
-		return nil
-	}
-}
-
-func initRedis(store string) cache.Driver {
-	redis, err := NewRedis(context.Background(), facades.Config.GetString(fmt.Sprintf("cache.stores.%s.connection", store), "default"))
+	instance, err := app.driver.New(name)
 	if err != nil {
-		color.Redf("[Cache] Init redis driver error: %v\n", err)
-		return nil
-	}
-	if redis == nil {
-		return nil
-	}
+		app.log.Error(err)
 
-	return redis
-}
-
-func initMemory() cache.Driver {
-	memory, err := NewMemory()
-	if err != nil {
-		color.Redf("[Cache] Init memory driver error: %v\n", err)
 		return nil
 	}
 
-	return memory
-}
+	app.stores[name] = instance
 
-func initCustom(store string) cache.Driver {
-	if custom, ok := facades.Config.Get(fmt.Sprintf("cache.stores.%s.via", store)).(cache.Driver); ok {
-		return custom
-	}
-	color.Redf("[Cache] %s doesn't implement contracts/cache/store\n", store)
-
-	return nil
+	return instance
 }

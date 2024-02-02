@@ -1,4 +1,16 @@
-<p align="center"><img src="logo.png" width="300"></p>
+<div align="center">
+
+<img src="https://www.goravel.dev/logo.png" width="300" alt="Logo">
+
+[![Doc](https://pkg.go.dev/badge/github.com/goravel/framework)](https://pkg.go.dev/github.com/goravel/framework)
+[![Go](https://img.shields.io/github/go-mod/go-version/goravel/framework)](https://go.dev/)
+[![Release](https://img.shields.io/github/release/goravel/framework.svg)](https://github.com/goravel/framework/releases)
+[![Test](https://github.com/goravel/framework/actions/workflows/test.yml/badge.svg)](https://github.com/goravel/framework/actions)
+[![Report Card](https://goreportcard.com/badge/github.com/goravel/framework)](https://goreportcard.com/report/github.com/goravel/framework)
+[![Codecov](https://codecov.io/gh/goravel/framework/branch/master/graph/badge.svg)](https://codecov.io/gh/goravel/framework)
+![License](https://img.shields.io/github/license/goravel/framework)
+
+</div>
 
 [English](./README.md) | 中文
 
@@ -21,47 +33,55 @@ Laravel！
 
 ## 主要功能
 
-- [x] 自定义配置
-- [x] HTTP 服务
-- [x] 用户认证
-- [x] 用户授权
-- [x] 数据库 ORM
-- [x] 数据库迁移
-- [x] 日志
-- [x] 缓存
-- [x] Grpc
-- [x] Artisan 命令行
-- [x] 任务调度
-- [x] 队列
-- [x] 事件系统
-- [x] 文件存储
-- [x] 邮件
-- [x] 表单验证
-- [x] Mock
-- [x] Hash
-- [x] Crypt
+|             |                      |                      |                      |
+| ----------  | --------------       | --------------       | --------------       |
+| [自定义配置](https://www.goravel.dev/zh/getting-started/configuration.html)   | [HTTP 服务](https://www.goravel.dev/zh/the-basics/routing.html)  | [用户认证](https://www.goravel.dev/zh/security/authentication.html)  | [用户授权](https://www.goravel.dev/zh/security/authorization.html)  |
+| [数据库 ORM](https://www.goravel.dev/zh/ORM/getting-started.html)   | [数据库迁移](https://www.goravel.dev/zh/ORM/migrations.html)  | [日志](https://www.goravel.dev/zh/the-basics/logging.html)  | [缓存](https://www.goravel.dev/zh/digging-deeper/cache.html)  |
+| [Grpc](https://www.goravel.dev/zh/the-basics/grpc.html)   | [Artisan 命令行](https://www.goravel.dev/zh/digging-deeper/artisan-console.html)  | [任务调度](https://www.goravel.dev/zh/digging-deeper/task-scheduling.html)  | [队列](https://www.goravel.dev/zh/digging-deeper/queues.html)  |
+| [事件系统](https://www.goravel.dev/zh/digging-deeper/event.html)   | [文件存储](https://www.goravel.dev/zh/digging-deeper/filesystem.html)  | [邮件](https://www.goravel.dev/zh/digging-deeper/mail.html)  | [表单验证](https://www.goravel.dev/zh/the-basics/validation.html)  |
+| [Mock](https://www.goravel.dev/zh/digging-deeper/mock.html)   | [Hash](https://www.goravel.dev/zh/security/hashing.html)  | [Crypt](https://www.goravel.dev/zh/security/encryption.html)  | [Carbon](https://www.goravel.dev/zh/digging-deeper/helpers.html)  |
+| [扩展包开发](https://www.goravel.dev/zh/digging-deeper/package-development.html)   | [测试](https://www.goravel.dev/zh/testing/getting-started.html) |   |   |
 
 ## 路线图
 
-[查看详情](https://github.com/goravel/goravel/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
+[查看详情](https://github.com/goravel/goravel/issues?q=is%3Aissue+is%3Aopen)
+
+## 优秀扩展包
+
+[查看详情](https://goravel.dev/zh/prologue/packages.html)
 
 ## 贡献者
 
-这个项目的存在要归功于所有做出贡献的人。
+这个项目的存在要归功于所有做出贡献的人，参与贡献请查看[贡献指南](https://goravel.dev/zh/prologue/contributions.html)。
 
 <a href="https://github.com/hwbrzzl" target="_blank"><img src="https://avatars.githubusercontent.com/u/24771476?v=4" width="48" height="48"></a>
+<a href="https://github.com/DevHaoZi" target="_blank"><img src="https://avatars.githubusercontent.com/u/115467771?v=4" width="48" height="48"></a>
+<a href="https://github.com/kkumar-gcc" target="_blank"><img src="https://avatars.githubusercontent.com/u/84431594?v=4" width="48" height="48"></a>
 <a href="https://github.com/merouanekhalili" target="_blank"><img src="https://avatars.githubusercontent.com/u/1122628?v=4" width="48" height="48"></a>
 <a href="https://github.com/hongyukeji" target="_blank"><img src="https://avatars.githubusercontent.com/u/23145983?v=4" width="48" height="48"></a>
-<a href="https://github.com/DevHaoZi" target="_blank"><img src="https://avatars.githubusercontent.com/u/115467771?v=4" width="48" height="48"></a>
 <a href="https://github.com/sidshrivastav" target="_blank"><img src="https://avatars.githubusercontent.com/u/28773690?v=4" width="48" height="48"></a>
+<a href="https://github.com/Juneezee" target="_blank"><img src="https://avatars.githubusercontent.com/u/20135478?v=4" width="48" height="48"></a>
+<a href="https://github.com/dragoonchang" target="_blank"><img src="https://avatars.githubusercontent.com/u/1432336?v=4" width="48" height="48"></a>
+<a href="https://github.com/dhanusaputra" target="_blank"><img src="https://avatars.githubusercontent.com/u/35093673?v=4" width="48" height="48"></a>
+<a href="https://github.com/mauri870" target="_blank"><img src="https://avatars.githubusercontent.com/u/10168637?v=4" width="48" height="48"></a>
+<a href="https://github.com/Marian0" target="_blank"><img src="https://avatars.githubusercontent.com/u/624592?v=4" width="48" height="48"></a>
+<a href="https://github.com/ahmed3mar" target="_blank"><img src="https://avatars.githubusercontent.com/u/12982325?v=4" width="48" height="48"></a>
+<a href="https://github.com/flc1125" target="_blank"><img src="https://avatars.githubusercontent.com/u/14297703?v=4" width="48" height="48"></a>
+<a href="https://github.com/zzpwestlife" target="_blank"><img src="https://avatars.githubusercontent.com/u/12382180?v=4" width="48" height="48"></a>
+<a href="https://github.com/juantarrel" target="_blank"><img src="https://avatars.githubusercontent.com/u/7213379?v=4" width="48" height="48"></a>
+<a href="https://github.com/Kamandlou" target="_blank"><img src="https://avatars.githubusercontent.com/u/77993374?v=4" width="48" height="48"></a>
+
+## 打赏
+
+开源项目的发展离不开您的支持，感谢微信打赏。
+
+<p align="left"><img src="https://www.goravel.dev/reward-wechat.jpg" width="200"></p>
 
 ## 群组
 
 微信入群，请备注 Goravel
 
 <p align="left"><img src="https://www.goravel.dev/wechat.jpg" width="200"></p>
-
-<!-- ![](https://user-images.githubusercontent.com/24771476/194740900-cee4aa43-7c22-42b6-ada9-42bc160cd797.JPG) -->
 
 ## 开源许可
 

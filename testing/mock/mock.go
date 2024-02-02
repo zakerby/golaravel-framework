@@ -1,110 +1,160 @@
 package mock
 
 import (
-	mocksaccess "github.com/goravel/framework/contracts/auth/access/mocks"
-	mocksauth "github.com/goravel/framework/contracts/auth/mocks"
-	mockscache "github.com/goravel/framework/contracts/cache/mocks"
-	mocksconfig "github.com/goravel/framework/contracts/config/mocks"
-	mocksconsole "github.com/goravel/framework/contracts/console/mocks"
-	mocksorm "github.com/goravel/framework/contracts/database/orm/mocks"
-	mocksevent "github.com/goravel/framework/contracts/event/mocks"
-	mocksfilesystem "github.com/goravel/framework/contracts/filesystem/mocks"
-	mocksgrpc "github.com/goravel/framework/contracts/grpc/mocks"
-	mocksmail "github.com/goravel/framework/contracts/mail/mocks"
-	mocksqueue "github.com/goravel/framework/contracts/queue/mocks"
-	mocksvalidate "github.com/goravel/framework/contracts/validation/mocks"
-	"github.com/goravel/framework/facades"
-	"github.com/goravel/framework/log"
+	"github.com/goravel/framework/foundation"
+	authmocks "github.com/goravel/framework/mocks/auth"
+	accessmocks "github.com/goravel/framework/mocks/auth/access"
+	cachemocks "github.com/goravel/framework/mocks/cache"
+	configmocks "github.com/goravel/framework/mocks/config"
+	consolemocks "github.com/goravel/framework/mocks/console"
+	cryptmocks "github.com/goravel/framework/mocks/crypt"
+	ormmocks "github.com/goravel/framework/mocks/database/orm"
+	seedermocks "github.com/goravel/framework/mocks/database/seeder"
+	eventmocks "github.com/goravel/framework/mocks/event"
+	filesystemmocks "github.com/goravel/framework/mocks/filesystem"
+	foundationmocks "github.com/goravel/framework/mocks/foundation"
+	grpcmocks "github.com/goravel/framework/mocks/grpc"
+	hashmocks "github.com/goravel/framework/mocks/hash"
+	httpmocks "github.com/goravel/framework/mocks/http"
+	mailmocks "github.com/goravel/framework/mocks/mail"
+	queuemocks "github.com/goravel/framework/mocks/queue"
+	validatemocks "github.com/goravel/framework/mocks/validation"
 )
 
-func Cache() (*mockscache.Cache, *mockscache.Driver, *mockscache.Lock) {
-	mockCache := &mockscache.Cache{}
-	facades.Cache = mockCache
+var app *foundationmocks.Application
 
-	return mockCache, &mockscache.Driver{}, &mockscache.Lock{}
+func App() *foundationmocks.Application {
+	if app == nil {
+		app = &foundationmocks.Application{}
+		foundation.App = app
+	}
+
+	return app
 }
 
-func Config() *mocksconfig.Config {
-	mockConfig := &mocksconfig.Config{}
-	facades.Config = mockConfig
-
-	return mockConfig
-}
-
-func Artisan() *mocksconsole.Artisan {
-	mockArtisan := &mocksconsole.Artisan{}
-	facades.Artisan = mockArtisan
+func Artisan() *consolemocks.Artisan {
+	mockArtisan := &consolemocks.Artisan{}
+	App().On("MakeArtisan").Return(mockArtisan)
 
 	return mockArtisan
 }
 
-func Orm() (*mocksorm.Orm, *mocksorm.Query, *mocksorm.Transaction, *mocksorm.Association) {
-	mockOrm := &mocksorm.Orm{}
-	facades.Orm = mockOrm
-
-	return mockOrm, &mocksorm.Query{}, &mocksorm.Transaction{}, &mocksorm.Association{}
-}
-
-func Event() (*mocksevent.Instance, *mocksevent.Task) {
-	mockEvent := &mocksevent.Instance{}
-	facades.Event = mockEvent
-
-	return mockEvent, &mocksevent.Task{}
-}
-
-func Log() {
-	facades.Log = log.NewApplication(log.NewTestWriter())
-}
-
-func Mail() *mocksmail.Mail {
-	mockMail := &mocksmail.Mail{}
-	facades.Mail = mockMail
-
-	return mockMail
-}
-
-func Queue() (*mocksqueue.Queue, *mocksqueue.Task) {
-	mockQueue := &mocksqueue.Queue{}
-	facades.Queue = mockQueue
-
-	return mockQueue, &mocksqueue.Task{}
-}
-
-func Storage() (*mocksfilesystem.Storage, *mocksfilesystem.Driver, *mocksfilesystem.File) {
-	mockStorage := &mocksfilesystem.Storage{}
-	mockDriver := &mocksfilesystem.Driver{}
-	mockFile := &mocksfilesystem.File{}
-	facades.Storage = mockStorage
-
-	return mockStorage, mockDriver, mockFile
-}
-
-func Validation() (*mocksvalidate.Validation, *mocksvalidate.Validator, *mocksvalidate.Errors) {
-	mockValidation := &mocksvalidate.Validation{}
-	mockValidator := &mocksvalidate.Validator{}
-	mockErrors := &mocksvalidate.Errors{}
-	facades.Validation = mockValidation
-
-	return mockValidation, mockValidator, mockErrors
-}
-
-func Auth() *mocksauth.Auth {
-	mockAuth := &mocksauth.Auth{}
-	facades.Auth = mockAuth
+func Auth() *authmocks.Auth {
+	mockAuth := &authmocks.Auth{}
+	App().On("MakeAuth").Return(mockAuth)
 
 	return mockAuth
 }
 
-func Gate() *mocksaccess.Gate {
-	mockGate := &mocksaccess.Gate{}
-	facades.Gate = mockGate
+func Cache() (*cachemocks.Cache, *cachemocks.Driver, *cachemocks.Lock) {
+	mockCache := &cachemocks.Cache{}
+	App().On("MakeCache").Return(mockCache)
+
+	return mockCache, &cachemocks.Driver{}, &cachemocks.Lock{}
+}
+
+func Config() *configmocks.Config {
+	mockConfig := &configmocks.Config{}
+	App().On("MakeConfig").Return(mockConfig)
+
+	return mockConfig
+}
+
+func Crypt() *cryptmocks.Crypt {
+	mockCrypt := &cryptmocks.Crypt{}
+	App().On("MakeCrypt").Return(mockCrypt)
+
+	return mockCrypt
+}
+
+func Event() (*eventmocks.Instance, *eventmocks.Task) {
+	mockEvent := &eventmocks.Instance{}
+	App().On("MakeEvent").Return(mockEvent)
+
+	return mockEvent, &eventmocks.Task{}
+}
+
+func Gate() *accessmocks.Gate {
+	mockGate := &accessmocks.Gate{}
+	App().On("MakeGate").Return(mockGate)
 
 	return mockGate
 }
 
-func Grpc() *mocksgrpc.Grpc {
-	mockGrpc := &mocksgrpc.Grpc{}
-	facades.Grpc = mockGrpc
+func Grpc() *grpcmocks.Grpc {
+	mockGrpc := &grpcmocks.Grpc{}
+	App().On("MakeGrpc").Return(mockGrpc)
 
 	return mockGrpc
+}
+
+func Hash() *hashmocks.Hash {
+	mockHash := &hashmocks.Hash{}
+	App().On("MakeHash").Return(mockHash)
+
+	return mockHash
+}
+
+func Log() {
+	App().On("MakeLog").Return(NewTestLog())
+}
+
+func Mail() *mailmocks.Mail {
+	mockMail := &mailmocks.Mail{}
+	App().On("MakeMail").Return(mockMail)
+
+	return mockMail
+}
+
+func Orm() (*ormmocks.Orm, *ormmocks.Query, *ormmocks.Transaction, *ormmocks.Association) {
+	mockOrm := &ormmocks.Orm{}
+	App().On("MakeOrm").Return(mockOrm)
+
+	return mockOrm, &ormmocks.Query{}, &ormmocks.Transaction{}, &ormmocks.Association{}
+}
+
+func Queue() (*queuemocks.Queue, *queuemocks.Task) {
+	mockQueue := &queuemocks.Queue{}
+	App().On("MakeQueue").Return(mockQueue)
+
+	return mockQueue, &queuemocks.Task{}
+}
+
+func RateLimiter() *httpmocks.RateLimiter {
+	mockRateLimiter := &httpmocks.RateLimiter{}
+	App().On("MakeRateLimiter").Return(mockRateLimiter)
+
+	return mockRateLimiter
+}
+
+func Storage() (*filesystemmocks.Storage, *filesystemmocks.Driver, *filesystemmocks.File) {
+	mockStorage := &filesystemmocks.Storage{}
+	mockDriver := &filesystemmocks.Driver{}
+	mockFile := &filesystemmocks.File{}
+	App().On("MakeStorage").Return(mockStorage)
+
+	return mockStorage, mockDriver, mockFile
+}
+
+func Validation() (*validatemocks.Validation, *validatemocks.Validator, *validatemocks.Errors) {
+	mockValidation := &validatemocks.Validation{}
+	mockValidator := &validatemocks.Validator{}
+	mockErrors := &validatemocks.Errors{}
+	App().On("MakeValidation").Return(mockValidation)
+
+	return mockValidation, mockValidator, mockErrors
+}
+
+func View() *httpmocks.View {
+	mockView := &httpmocks.View{}
+	App().On("MakeView").Return(mockView)
+
+	return mockView
+}
+
+func Seeder() *seedermocks.Facade {
+	mockSeeder := &seedermocks.Facade{}
+	App().On("MakeSeeder").Return(mockSeeder)
+
+	return mockSeeder
 }

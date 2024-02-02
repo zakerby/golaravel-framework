@@ -5,13 +5,14 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"io"
 
 	"github.com/gookit/color"
 
-	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/contracts/config"
+	"github.com/goravel/framework/support"
+	"github.com/goravel/framework/support/json"
 )
 
 type AES struct {
@@ -19,11 +20,17 @@ type AES struct {
 }
 
 // NewAES returns a new AES hasher.
-func NewAES() *AES {
-	key := facades.Config.GetString("app.key")
+func NewAES(config config.Config) *AES {
+	key := config.GetString("app.key")
+
+	// Don't use AES in artisan when the key is empty.
+	if support.Env == support.EnvArtisan && len(key) == 0 {
+		return nil
+	}
+
 	// check key length before using it
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		color.Redln("[Crypt] Empty or invalid APP_KEY, please reset it.\nRun command:\ngo run . artisan key:generate")
+		color.Redln("[Crypt] Empty or invalid APP_KEY, please reset it.\nExample command:\ngo run . artisan key:generate")
 		return nil
 	}
 	keyBytes := []byte(key)
@@ -53,10 +60,12 @@ func (b *AES) EncryptString(value string) (string, error) {
 
 	ciphertext := aesgcm.Seal(nil, iv, plaintext, nil)
 
-	jsonEncoded, err := json.Marshal(map[string][]byte{
+	var jsonEncoded []byte
+	jsonEncoded, err = json.Marshal(map[string][]byte{
 		"iv":    iv,
 		"value": ciphertext,
 	})
+
 	if err != nil {
 		return "", err
 	}

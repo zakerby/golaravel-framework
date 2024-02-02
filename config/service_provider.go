@@ -1,27 +1,21 @@
 package config
 
 import (
-	"flag"
-
-	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/support"
 )
+
+const Binding = "goravel.config"
 
 type ServiceProvider struct {
 }
 
-func (config *ServiceProvider) Register() {
-	var env *string
-	if support.Env == support.EnvTest {
-		testEnv := ".env"
-		env = &testEnv
-	} else {
-		env = flag.String("env", ".env", "custom .env path")
-		flag.Parse()
-	}
-	facades.Config = NewApplication(*env)
+func (config *ServiceProvider) Register(app foundation.Application) {
+	app.Singleton(Binding, func(app foundation.Application) (any, error) {
+		return NewApplication(support.EnvPath), nil
+	})
 }
 
-func (config *ServiceProvider) Boot() {
+func (config *ServiceProvider) Boot(app foundation.Application) {
 
 }

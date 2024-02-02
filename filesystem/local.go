@@ -4,28 +4,28 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/goravel/framework/contracts/config"
 	"github.com/goravel/framework/contracts/filesystem"
-	"github.com/goravel/framework/facades"
-	"github.com/goravel/framework/support"
+	supportfile "github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/str"
 )
 
 type Local struct {
-	root string
-	url  string
+	config config.Config
+	root   string
+	url    string
 }
 
-func NewLocal(disk string) (*Local, error) {
+func NewLocal(config config.Config, disk string) (*Local, error) {
 	return &Local{
-		root: facades.Config.GetString(fmt.Sprintf("filesystems.disks.%s.root", disk)),
-		url:  facades.Config.GetString(fmt.Sprintf("filesystems.disks.%s.url", disk)),
+		config: config,
+		root:   config.GetString(fmt.Sprintf("filesystems.disks.%s.root", disk)),
+		url:    config.GetString(fmt.Sprintf("filesystems.disks.%s.url", disk)),
 	}, nil
 }
 
@@ -37,9 +37,9 @@ func (r *Local) AllDirectories(path string) ([]string, error) {
 		}
 		if info.IsDir() {
 			realPath := strings.ReplaceAll(fullPath, r.fullPath(path), "")
-			realPath = strings.TrimPrefix(realPath, "/")
+			realPath = strings.TrimPrefix(realPath, string(filepath.Separator))
 			if realPath != "" {
-				directories = append(directories, realPath+"/")
+				directories = append(directories, realPath+string(filepath.Separator))
 			}
 		}
 
@@ -56,7 +56,7 @@ func (r *Local) AllFiles(path string) ([]string, error) {
 			return err
 		}
 		if !info.IsDir() {
-			files = append(files, strings.ReplaceAll(fullPath, r.fullPath(path)+"/", ""))
+			files = append(files, strings.ReplaceAll(fullPath, r.fullPath(path)+string(filepath.Separator), ""))
 		}
 
 		return nil
@@ -101,10 +101,10 @@ func (r *Local) DeleteDirectory(directory string) error {
 
 func (r *Local) Directories(path string) ([]string, error) {
 	var directories []string
-	fileInfo, _ := ioutil.ReadDir(r.fullPath(path))
+	fileInfo, _ := os.ReadDir(r.fullPath(path))
 	for _, f := range fileInfo {
 		if f.IsDir() {
-			directories = append(directories, f.Name()+"/")
+			directories = append(directories, f.Name()+string(filepath.Separator))
 		}
 	}
 
@@ -121,7 +121,7 @@ func (r *Local) Exists(file string) bool {
 
 func (r *Local) Files(path string) ([]string, error) {
 	var files []string
-	fileInfo, err := ioutil.ReadDir(r.fullPath(path))
+	fileInfo, err := os.ReadDir(r.fullPath(path))
 	if err != nil {
 		return nil, err
 	}
@@ -135,16 +135,30 @@ func (r *Local) Files(path string) ([]string, error) {
 }
 
 func (r *Local) Get(file string) (string, error) {
-	data, err := ioutil.ReadFile(r.fullPath(file))
+	data, err := r.GetBytes(file)
+
+	return string(data), err
+}
+
+func (r *Local) GetBytes(file string) ([]byte, error) {
+	data, err := os.ReadFile(r.fullPath(file))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(data), nil
+	return data, nil
+}
+
+func (r *Local) LastModified(file string) (time.Time, error) {
+	return supportfile.LastModified(r.fullPath(file), r.config.GetString("app.timezone"))
 }
 
 func (r *Local) MakeDirectory(directory string) error {
-	return os.MkdirAll(path.Dir(r.fullPath(directory)+"/"), os.ModePerm)
+	return os.MkdirAll(filepath.Dir(r.fullPath(directory)+string(filepath.Separator)), os.ModePerm)
+}
+
+func (r *Local) MimeType(file string) (string, error) {
+	return supportfile.MimeType(r.fullPath(file))
 }
 
 func (r *Local) Missing(file string) bool {
@@ -153,7 +167,7 @@ func (r *Local) Missing(file string) bool {
 
 func (r *Local) Move(oldFile, newFile string) error {
 	newFile = r.fullPath(newFile)
-	if err := os.MkdirAll(path.Dir(newFile), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(newFile), os.ModePerm); err != nil {
 		return err
 	}
 
@@ -165,12 +179,12 @@ func (r *Local) Move(oldFile, newFile string) error {
 }
 
 func (r *Local) Path(file string) string {
-	return support.RootPath + "/" + strings.TrimPrefix(strings.TrimPrefix(r.fullPath(file), "/"), "./")
+	return r.fullPath(file)
 }
 
 func (r *Local) Put(file, content string) error {
 	file = r.fullPath(file)
-	if err := os.MkdirAll(path.Dir(file), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(file), os.ModePerm); err != nil {
 		return err
 	}
 
@@ -192,7 +206,7 @@ func (r *Local) PutFile(filePath string, source filesystem.File) (string, error)
 }
 
 func (r *Local) PutFileAs(filePath string, source filesystem.File, name string) (string, error) {
-	data, err := ioutil.ReadFile(source.File())
+	data, err := os.ReadFile(source.File())
 	if err != nil {
 		return "", err
 	}
@@ -210,17 +224,7 @@ func (r *Local) PutFileAs(filePath string, source filesystem.File, name string) 
 }
 
 func (r *Local) Size(file string) (int64, error) {
-	fileInfo, err := os.Open(r.fullPath(file))
-	if err != nil {
-		return 0, err
-	}
-
-	fi, err := fileInfo.Stat()
-	if err != nil {
-		return 0, err
-	}
-
-	return fi.Size(), nil
+	return supportfile.Size(r.fullPath(file))
 }
 
 func (r *Local) TemporaryUrl(file string, time time.Time) (string, error) {
@@ -232,22 +236,19 @@ func (r *Local) WithContext(ctx context.Context) filesystem.Driver {
 }
 
 func (r *Local) Url(file string) string {
-	return strings.TrimSuffix(r.url, "/") + "/" + strings.TrimPrefix(file, "/")
+	return strings.TrimSuffix(r.url, "/") + "/" + strings.TrimPrefix(filepath.ToSlash(file), "/")
 }
 
 func (r *Local) fullPath(path string) string {
-	if path == "." {
-		path = ""
-	}
-	realPath := strings.TrimPrefix(path, "./")
-	realPath = strings.TrimSuffix(strings.TrimPrefix(realPath, "/"), "/")
-	if realPath == "" {
+	realPath := filepath.Clean(path)
+
+	if realPath == "." {
 		return r.rootPath()
-	} else {
-		return r.rootPath() + realPath
 	}
+
+	return filepath.Join(r.rootPath(), realPath)
 }
 
 func (r *Local) rootPath() string {
-	return strings.TrimSuffix(r.root, "/") + "/"
+	return strings.TrimSuffix(r.root, string(filepath.Separator)) + string(filepath.Separator)
 }

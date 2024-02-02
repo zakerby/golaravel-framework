@@ -1,12 +1,34 @@
 package database
 
 import (
+	"reflect"
 	"testing"
 
-	"github.com/goravel/framework/database/orm"
-
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goravel/framework/database/orm"
 )
+
+type TestStruct struct {
+	ID   int `gorm:"primaryKey"`
+	name string
+}
+
+type TestStructString struct {
+	ID   string `gorm:"primaryKey"`
+	name string
+}
+
+type TestStructUUID struct {
+	ID   uuid.UUID `gorm:"primaryKey"`
+	name string
+}
+
+type TestStructNoPK struct {
+	ID   int
+	name string
+}
 
 func TestGetID(t *testing.T) {
 	tests := []struct {
@@ -96,6 +118,66 @@ func TestGetID(t *testing.T) {
 				}
 				assert.Nil(t, GetID(&User{}), description)
 				assert.Nil(t, GetID(nil), description)
+			},
+		},
+	}
+	for _, test := range tests {
+		test.setup(test.description)
+	}
+}
+
+func TestGetIDByReflect(t *testing.T) {
+	tests := []struct {
+		description string
+		setup       func(description string)
+	}{
+		{
+			description: "TestStruct.ID type int",
+			setup: func(description string) {
+				ts := TestStruct{ID: 1, name: "name"}
+				v := reflect.ValueOf(ts)
+				tpe := reflect.TypeOf(ts)
+
+				result := GetIDByReflect(tpe, v)
+
+				assert.Equal(t, 1, result)
+			},
+		},
+		{
+			description: "TestStruct.ID type string",
+			setup: func(description string) {
+				ts := TestStructString{ID: "goravel", name: "name"}
+				v := reflect.ValueOf(ts)
+				tpe := reflect.TypeOf(ts)
+
+				result := GetIDByReflect(tpe, v)
+
+				assert.Equal(t, "goravel", result)
+			},
+		},
+		{
+			description: "TestStruct.ID type UUID",
+			setup: func(description string) {
+				id := uuid.New()
+				ts := TestStructUUID{ID: id, name: "name"}
+				v := reflect.ValueOf(ts)
+				tpe := reflect.TypeOf(ts)
+
+				result := GetIDByReflect(tpe, v)
+
+				assert.Equal(t, id, result)
+			},
+		},
+		{
+			description: "TestStruct without primaryKey",
+			setup: func(description string) {
+				ts := TestStructNoPK{ID: 1, name: "name"}
+				v := reflect.ValueOf(ts)
+				tpe := reflect.TypeOf(ts)
+
+				result := GetIDByReflect(tpe, v)
+
+				assert.Nil(t, result)
 			},
 		},
 	}

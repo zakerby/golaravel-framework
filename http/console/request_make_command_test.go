@@ -3,7 +3,7 @@ package console
 import (
 	"testing"
 
-	consolemocks "github.com/goravel/framework/contracts/console/mocks"
+	consolemocks "github.com/goravel/framework/mocks/console"
 	"github.com/goravel/framework/support/file"
 
 	"github.com/stretchr/testify/assert"
@@ -20,5 +20,12 @@ func TestRequestMakeCommand(t *testing.T) {
 	err = requestMakeCommand.Handle(mockContext)
 	assert.Nil(t, err)
 	assert.True(t, file.Exists("app/http/requests/create_user.go"))
-	assert.True(t, file.Remove("app"))
+
+	mockContext.On("Argument", 0).Return("User/Auth").Once()
+	err = requestMakeCommand.Handle(mockContext)
+	assert.Nil(t, err)
+	assert.True(t, file.Exists("app/http/requests/User/auth.go"))
+	assert.True(t, file.Contain("app/http/requests/User/auth.go", "package User"))
+	assert.True(t, file.Contain("app/http/requests/User/auth.go", "type Auth struct"))
+	assert.Nil(t, file.Remove("app"))
 }
